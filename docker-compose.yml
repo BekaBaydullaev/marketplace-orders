@@ -26,5 +26,22 @@ services:
       timeout: 3s
       retries: 10
 
+  api:
+    build:
+      context: ./src/Marketplace.Api
+    ports:
+      - "8080:8080"
+    environment:
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=marketplace;Username=marketplace;Password=marketplace
+      ConnectionStrings__Redis: redis:6379
+      Jwt__Key: ${JWT_KEY:-docker-development-key-with-at-least-32-bytes}
+      Jwt__Issuer: marketplace-api
+      Jwt__Audience: marketplace-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres-data:
