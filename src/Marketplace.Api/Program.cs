@@ -1,6 +1,6 @@
 using System.Text;
 using Marketplace.Api.Auth;
-//using Marketplace.Api.BackgroundJobs;
+using Marketplace.Api.BackgroundJobs;
 using Marketplace.Api.Caching;
 using Marketplace.Api.Repositories;
 using Marketplace.Api.Services;
@@ -20,7 +20,7 @@ if (Encoding.UTF8.GetByteCount(jwtOptions.Key) < 32)
 }
 
 builder.Services.Configure<JwtOptions>(jwtSection);
-//builder.Services.Configure<OrderOptions>(builder.Configuration.GetSection(OrderOptions.SectionName));
+builder.Services.Configure<OrderOptions>(builder.Configuration.GetSection(OrderOptions.SectionName));
 
 builder.Services.AddSingleton(_ => NpgsqlDataSource.Create(builder.Configuration.GetConnectionString("Postgres")!));
 
@@ -36,13 +36,13 @@ builder.Services.AddSingleton<JwtTokenGenerator>();
 
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<ProductRepository>();
-//builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<OrderRepository>();
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ProductService>();
-//builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<OrderService>();
 
-//builder.Services.AddHostedService<ExpiredOrdersJob>();
+builder.Services.AddHostedService<ExpiredOrdersJob>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

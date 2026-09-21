@@ -1,6 +1,102 @@
-@Marketplace.Api_HostAddress = http://localhost:5163
+@host = http://localhost:8080
+@email = reviewer@test.com
+@password = Password123
 
-GET {{Marketplace.Api_HostAddress}}/weatherforecast/
+# Run "Log in" below, copy accessToken from the response, and paste it here.
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJtYXJrZXRwbGFjZS1hcGkiLCJpc3MiOiJtYXJrZXRwbGFjZS1hcGkiLCJleHAiOjE3OTAwMDQ4NjMsInN1YiI6IjEiLCJlbWFpbCI6ImJlbkB0ZXN0LmNvbSIsImlhdCI6MTc5MDAwMTI2MywibmJmIjoxNzkwMDAxMjYzfQ.tMexyIFeIsuTapwbuWGln0v6gtzFUaIltvHwvLIjnnc
+
+### Health check
+GET {{host}}/health
+
+### Register a user
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Log in (copy accessToken into the @token variable above)
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Create a product
+POST {{host}}/products
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Keyboard",
+  "price": 49.90,
+  "stock": 10
+}
+
+### Get a product (no token needed)
+GET {{host}}/products/1
 Accept: application/json
 
-###
+### Create an order
+POST {{host}}/orders
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Idempotency-Key: demo-key-1
+
+{
+  "items": [
+    { "productId": 1, "quantity": 2 }
+  ]
+}
+
+### Same key, same body: replays the order, stock must not drop again
+POST {{host}}/orders
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Idempotency-Key: demo-key-1
+
+{
+  "items": [
+    { "productId": 1, "quantity": 2 }
+  ]
+}
+
+### Same key, different body: 422
+POST {{host}}/orders
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Idempotency-Key: demo-key-1
+
+{
+  "items": [
+    { "productId": 1, "quantity": 5 }
+  ]
+}
+
+### Missing Idempotency-Key: 400
+POST {{host}}/orders
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "items": [
+    { "productId": 1, "quantity": 1 }
+  ]
+}
+
+### Get an order
+GET {{host}}/orders/1
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Pay for an order
+POST {{host}}/orders/1/pay
+Authorization: Bearer {{token}}
+
+### Cancel an order
+POST {{host}}/orders/1/cancel
+Authorization: Bearer {{token}}
